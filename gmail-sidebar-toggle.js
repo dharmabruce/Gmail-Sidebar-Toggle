@@ -11,20 +11,19 @@
 // @match https://mail.google.com/*
 // ==/UserScript==
 
-setTimeout(function () {
-    $(document).ready(function () {
-        check();
-    });
-}, 1000);
+/*jslint white: true, onevar: true, undef: true, nomen: false, eqeqeq: true, plusplus: false, bitwise: true, regexp: true, strict: true, newcap: true, immed: true */
+/*global $ window document setTimeout clearTimeout */
+
+"use strict";
 
 var tries = 10;
 
-function check () {
-    var sidebar = $("div[style*='172px']");
+function check() {
+    var sidebar = $("div[style*='172px']"), list, message, div, resizeTimer;
     if (sidebar.length) {
-        var list = sidebar.siblings().eq(1);
-        var message = $("div[style*='" + (list.width() - 8) + "']");
-        var div = "<div id='sidebarToggle' style=" + '"' + "text-align: center; cursor: pointer;" + '"' + ">&lt; &lt; &lt;</div>";
+        list = sidebar.siblings().eq(1);
+        message = $("div[style*='" + (list.width() - 8) + "']");
+        div = "<div id='sidebarToggle' style=" + '"' + "text-align: center; cursor: pointer;" + '"' + ">&lt; &lt; &lt;</div>";
         sidebar.wrap("<div style=" + '"' + "float: left; width: 172px;" + '"' + "></div>");
         sidebar.before(div);
         $("#sidebarToggle").click(function (ev) {
@@ -45,13 +44,12 @@ function check () {
             }
         });
         
-        var resizeTimer;
-        $(window).resize( function () {
+        $(window).resize(function () {
             if (resizeTimer) {
                 clearTimeout(resizeTimer);
             }
             resizeTimer = setTimeout(function () {
-                if(sidebar.is(":hidden")) {
+                if (sidebar.is(":hidden")) {
                     list.width(list.width() + 162);
                     message.width(message.width() + 162);
                 }
@@ -63,3 +61,10 @@ function check () {
         setTimeout(check, 1000);
     }
 }
+
+setTimeout(function () {
+    $(document).ready(function () {
+        check();
+    });
+}, 1000);
+
