@@ -3,6 +3,6 @@ GMail Sidebar Toggle
 GMail Sidebar Toggle adds a "< < <" control above "Compose Mail" so you can 
 selectively hide the sidebar.
 
-To build, run `cat gmail-sidebar-toggle.js jquery-1.4.2.min.js > gmail-sidebar-toggle.user.js`.
+To build, run `cat gmail-sidebar-toggle.js jquery-1.4.2.min.js jquery.cookie.js > gmail-sidebar-toggle.user.js`.
 
 
