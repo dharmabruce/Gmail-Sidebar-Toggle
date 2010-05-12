@@ -26,23 +26,37 @@ function isSidebarAvailable() {
 
 function toggleSidebar(elements) {
     var sidebar = elements.sidebar, list = elements.list, message = elements.message;
-    if (sidebar.is(":hidden")) {
-        list.animate({ width: "-=162" });
-        message.animate({width: "-=162"});
-        sidebar.show();
-        sidebar.parent().animate({ width: 172 }, function () {
-            $("#sidebarToggle").text("< < <");
-            $.cookie('sidebar-closed', null);
-        });
-    } else {
-        sidebar.parent().animate({ width: 10 }, function () {
-            sidebar.hide();
+    if (sidebar.css('position') === 'static') {
+        // hide
+        $("#sidebarToggle").parent().animate({ width: 10 }, function () {
+            sidebar.css(
+                {
+                    position: 'absolute',
+                    left: '-1000px'
+                }
+            );
             $("#sidebarToggle").text("> > >");
             $.cookie('sidebar-closed', 'true', {expires: 100});
         });
         list.animate({width: "+=162"});
         message.animate({width: "+=162"});
+    } else {
+        // show
+        sidebar.css(
+            {
+                position: 'static'
+            }
+        );
+
+        list.animate({ width: "-=162" });
+        message.animate({width: "-=162"});
+        
+        $("#sidebarToggle").parent().animate({ width: 172 }, function () {
+            $("#sidebarToggle").text("< < <");
+            $.cookie('sidebar-closed', null);
+        });
     }
+
 }
 
 function modifyHTML(elements) {
@@ -50,16 +64,12 @@ function modifyHTML(elements) {
     control = "<div id='sidebarToggle' style=" + '"' + "text-align: center; cursor: pointer;" + '"' + ">&lt; &lt; &lt;</div>";
     sidebar.wrap("<div style=" + '"' + "float: left; width: 172px;" + '"' + "></div>");
     sidebar.before(control);
-    if ($.cookie('sidebar-closed') !== null) {
-        toggleSidebar(elements);
-    }
-}
-
-function addClickHandler(elements) {
-    var sidebar = elements.sidebar, list = elements.list, message = elements.message;
     $("#sidebarToggle").click(function (ev) {
         toggleSidebar(elements);
     });
+    if ($.cookie('sidebar-closed') !== null) {
+        toggleSidebar(elements);
+    }
 }
 
 function addResizeHandler(elements) {
@@ -69,7 +79,7 @@ function addResizeHandler(elements) {
             clearTimeout(resizeTimer);
         }
         resizeTimer = setTimeout(function () {
-            if (sidebar.is(":hidden")) {
+            if (elements.isSidebarAttached) {
                 list.width(list.width() + 162);
                 message.width(message.width() + 162);
             }
@@ -79,7 +89,7 @@ function addResizeHandler(elements) {
 
 function addSidebarControl() {
     var elements = {
-        sidebar: $("div[style*='172px']"),
+        sidebar: $("div[style*='172px']").eq(0),
         list: null,
         message: null
     };
@@ -88,7 +98,6 @@ function addSidebarControl() {
     elements.message = $("div[style*='" + (elements.list.width() - 8) + "']");
 
     modifyHTML(elements);
-    addClickHandler(elements);
     addResizeHandler(elements);
 }
 
