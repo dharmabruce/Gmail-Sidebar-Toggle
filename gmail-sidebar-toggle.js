@@ -16,48 +16,89 @@
 
 "use strict";
 
-var tries = 10;
+function isSidebarAvailable() {
+    var sidebar = $("div[style*='172px']");
+    if (sidebar.length) {
+        return true;
+    }
+    return false;
+}
+
+function toggleSidebar(elements) {
+    var sidebar = elements.sidebar, list = elements.list, message = elements.message;
+    if (sidebar.is(":hidden")) {
+        list.animate({ width: "-=162" });
+        message.animate({width: "-=162"});
+        sidebar.show();
+        sidebar.parent().animate({ width: 172 }, function () {
+            $("#sidebarToggle").text("< < <");
+            $.cookie('sidebar-closed', null);
+        });
+    } else {
+        sidebar.parent().animate({ width: 10 }, function () {
+            sidebar.hide();
+            $("#sidebarToggle").text("> > >");
+            $.cookie('sidebar-closed', 'true', {expires: 100});
+        });
+        list.animate({width: "+=162"});
+        message.animate({width: "+=162"});
+    }
+}
+
+function modifyHTML(elements) {
+    var control, sidebar = elements.sidebar;
+    control = "<div id='sidebarToggle' style=" + '"' + "text-align: center; cursor: pointer;" + '"' + ">&lt; &lt; &lt;</div>";
+    sidebar.wrap("<div style=" + '"' + "float: left; width: 172px;" + '"' + "></div>");
+    sidebar.before(control);
+    if ($.cookie('sidebar-closed') !== null) {
+        toggleSidebar(elements);
+    }
+}
+
+function addClickHandler(elements) {
+    var sidebar = elements.sidebar, list = elements.list, message = elements.message;
+    $("#sidebarToggle").click(function (ev) {
+        toggleSidebar(elements);
+    });
+}
+
+function addResizeHandler(elements) {
+    var resizeTimer, sidebar = elements.sidebar, list = elements.list, message = elements.message;
+    $(window).resize(function () {
+        if (resizeTimer) {
+            clearTimeout(resizeTimer);
+        }
+        resizeTimer = setTimeout(function () {
+            if (sidebar.is(":hidden")) {
+                list.width(list.width() + 162);
+                message.width(message.width() + 162);
+            }
+        }, 100);
+    });
+}
+
+function addSidebarControl() {
+    var elements = {
+        sidebar: $("div[style*='172px']"),
+        list: null,
+        message: null
+    };
+
+    elements.list = elements.sidebar.siblings().eq(1);
+    elements.message = $("div[style*='" + (elements.list.width() - 8) + "']");
+
+    modifyHTML(elements);
+    addClickHandler(elements);
+    addResizeHandler(elements);
+}
 
 function check() {
-    var sidebar = $("div[style*='172px']"), list, message, div, resizeTimer;
-    if (sidebar.length) {
-        list = sidebar.siblings().eq(1);
-        message = $("div[style*='" + (list.width() - 8) + "']");
-        div = "<div id='sidebarToggle' style=" + '"' + "text-align: center; cursor: pointer;" + '"' + ">&lt; &lt; &lt;</div>";
-        sidebar.wrap("<div style=" + '"' + "float: left; width: 172px;" + '"' + "></div>");
-        sidebar.before(div);
-        $("#sidebarToggle").click(function (ev) {
-            if (sidebar.is(":hidden")) {
-                list.animate({ width: "-=162" });
-                message.animate({width: "-=162"});
-                sidebar.show();
-                sidebar.parent().animate({ width: 172 }, function () {
-                    $("#sidebarToggle").text("< < <");
-                });
-            } else {
-                sidebar.parent().animate({ width: 10 }, function () {
-                    sidebar.hide();
-                    $("#sidebarToggle").text("> > >");
-                });
-                list.animate({width: "+=162"});
-                message.animate({width: "+=162"});
-            }
-        });
-        
-        $(window).resize(function () {
-            if (resizeTimer) {
-                clearTimeout(resizeTimer);
-            }
-            resizeTimer = setTimeout(function () {
-                if (sidebar.is(":hidden")) {
-                    list.width(list.width() + 162);
-                    message.width(message.width() + 162);
-                }
-            }, 100);
-        });
-        
-        tries = 0;
-    } else if (tries-- > 0) {
+    var tries = 10;
+    
+    if (isSidebarAvailable()) {
+        addSidebarControl();
+    } else if (tries > 0) {
+        tries--;
         setTimeout(check, 1000);
     }
 }
@@ -67,4 +108,6 @@ setTimeout(function () {
         check();
     });
 }, 1000);
+
+
 
